@@ -1,5 +1,4 @@
 package com.fdt.service.impl;
-import java.util.Date;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -13,6 +12,8 @@ import org.springframework.util.DigestUtils;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+
+import static com.fdt.contant.UserContant.USER_LOGIN_STATE;
 
 /**
 * @author 冯德田
@@ -33,10 +34,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     private static final String SALT = "fdt";
 
 
-    /**
-     * 用户登录态的键
-     */
-    private static final String USER_LOGIN_STATE = "userLoginState";
 
     @Override
     public long userRegister(String userAccount, String userPassword, String checkPassword) {
@@ -128,20 +125,32 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
 
         //4.脱敏
-        User safetyUser = new User();
-        safetyUser.setId(user.getId());
-        safetyUser.setUsername(user.getUsername());
-        safetyUser.setUserAccount(user.getUserAccount());
-        safetyUser.setAvatarUrl(user.getAvatarUrl());
-        safetyUser.setGender(user.getGender());
-        safetyUser.setPhone(user.getPhone());
-        safetyUser.setEmail(user.getEmail());
-        safetyUser.setStatus(user.getStatus());
-        safetyUser.setCreateTime(user.getCreateTime());
+        User safetyUser = getSafetyUser(user);
 
         //5.记录用户登录态
         request.getSession().setAttribute(USER_LOGIN_STATE, safetyUser);
 
+        return safetyUser;
+    }
+
+    /**
+     * 获取脱敏用户
+     * @param orginUser
+     * @return
+     */
+    @Override
+    public User getSafetyUser(User orginUser){
+        User safetyUser = new User();
+        safetyUser.setId(orginUser.getId());
+        safetyUser.setUsername(orginUser.getUsername());
+        safetyUser.setUserAccount(orginUser.getUserAccount());
+        safetyUser.setAvatarUrl(orginUser.getAvatarUrl());
+        safetyUser.setGender(orginUser.getGender());
+        safetyUser.setPhone(orginUser.getPhone());
+        safetyUser.setEmail(orginUser.getEmail());
+        safetyUser.setUserRole(orginUser.getUserRole());
+        safetyUser.setStatus(orginUser.getStatus());
+        safetyUser.setCreateTime(orginUser.getCreateTime());
         return safetyUser;
     }
 }
