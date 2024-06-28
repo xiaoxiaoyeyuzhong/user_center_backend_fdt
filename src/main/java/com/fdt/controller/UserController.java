@@ -30,6 +30,12 @@ public class UserController {
 
     @Resource
     private UserService userService;
+
+    /**
+     * 用户注册
+     * @param userRegisterRequest
+     * @return long 新用户id
+     */
     @PostMapping("/register")
     public Long userRegister(@RequestBody UserRegisterRequest userRegisterRequest){
         if (userRegisterRequest == null){
@@ -46,6 +52,12 @@ public class UserController {
 
     }
 
+    /**
+     * 用户登录
+     * @param userLoginRequest
+     * @param request
+     * @return user
+     */
     @PostMapping("/login")
     public User userLogin(@RequestBody UserLoginRequest userLoginRequest, HttpServletRequest request){
         if (userLoginRequest == null){
@@ -61,6 +73,26 @@ public class UserController {
 
     }
 
+    @GetMapping("current")
+    public User getCurrentUser(HttpServletRequest request){
+        Object userObj = request.getSession().getAttribute(USER_LOGIN_STATE);
+        User currentUser =(User) userObj;
+        if (currentUser == null){
+            return null;
+        }
+        long userId=currentUser.getId();
+        // TODO 校验用户是否合法
+        User user=userService.getById(userId);
+        return userService.getSafetyUser(user);
+    }
+
+
+    /**
+     * 用户搜索
+     * @param username
+     * @param request
+     * @return 脱敏后的user
+     */
     @GetMapping("/search")
     public List<User> searchUsers(String username, HttpServletRequest request){
         if (!isAdmin(request)){
@@ -77,6 +109,12 @@ public class UserController {
         }).collect(Collectors.toList());
     }
 
+    /**
+     * 用户删除
+     * @param id
+     * @param request
+     * @return boolen
+     */
     @PostMapping("/delete")
     public boolean deleteUser(@RequestBody long id, HttpServletRequest request){
         if (!isAdmin(request)){

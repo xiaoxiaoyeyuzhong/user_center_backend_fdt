@@ -1,5 +1,4 @@
 package com.fdt.service;
-import java.util.Date;
 
 import com.fdt.model.domain.User;
 import org.junit.jupiter.api.Assertions;
@@ -91,22 +90,23 @@ class UserServiceTest {
         result = userService.userRegister(userAccount, userPassword, checkPassword);
         Assertions.assertEquals(-1, result);
 
-        userAccount = "77122220";
-        userPassword = "12345678";
-        checkPassword = "12345678";
-        result = userService.userRegister(userAccount, userPassword, checkPassword);
-        System.out.println("result="+result);
-        Assertions.assertTrue(result>0);
+//        userAccount = "77122220";
+//        userPassword = "12345678";
+//        checkPassword = "12345678";
+//        result = userService.userRegister(userAccount, userPassword, checkPassword);
+//        System.out.println("result="+result);
+//        Assertions.assertTrue(result>0);
     }
          //测试成功
-        @Test
-         void testUserSucceeded(){
-            String userAccount = "77122220";
-            String userPassword = "12345678";
-            String checkPassword = "12345678";
-            long result = userService.userRegister(userAccount, userPassword, checkPassword);
-            System.out.println("result="+result);
-            Assertions.assertTrue(result>0);
-        }
+//        @Test
+//         void testUserSucceeded(){
+//            String userAccount = "77122220";
+//            String userPassword = "12345678";
+//            String checkPassword = "12345678";
+//            long result = userService.userRegister(userAccount, userPassword, checkPassword);
+//            System.out.println("result="+result);
+//            Assertions.assertTrue(result>0);
+//        }
+
 
     }

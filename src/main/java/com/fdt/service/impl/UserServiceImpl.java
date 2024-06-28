@@ -140,6 +140,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
      */
     @Override
     public User getSafetyUser(User orginUser){
+        if (orginUser == null){
+            return null;
+        }
         User safetyUser = new User();
         safetyUser.setId(orginUser.getId());
         safetyUser.setUsername(orginUser.getUsername());
