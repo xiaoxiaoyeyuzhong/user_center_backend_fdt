@@ -11,13 +11,17 @@ import java.io.Serializable;
  */
 @Data
 public class BaseResponse<T> implements Serializable {
+    //状态码
     private int code;
 
     //使用泛型,提高类的可重用性
+//    数据
     private T data;
 
+//  简略信息
     private String message;
 
+//    详细信息
     private String description;
 
     public BaseResponse(int code, T data, String message, String description) {
@@ -40,4 +44,5 @@ public class BaseResponse<T> implements Serializable {
     public BaseResponse(ErrorCode errorCode){
         this(errorCode.code(),null,errorCode.message(),errorCode.description());
     }
+
 }

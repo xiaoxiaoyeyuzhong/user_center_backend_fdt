@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.fdt.common.BaseResponse;
 import com.fdt.common.ErrorCode;
 import com.fdt.common.ResultUtils;
+import com.fdt.exception.BusinessException;
 import com.fdt.model.domain.request.UserLoginRequest;
 import com.fdt.model.domain.request.UserRegisterRequest;
 import com.fdt.service.UserService;
@@ -42,7 +43,7 @@ public class UserController {
     @PostMapping("/register")
     public BaseResponse<Long> userRegister(@RequestBody UserRegisterRequest userRegisterRequest){
         if (userRegisterRequest == null){
-            return null;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         String userAccount = userRegisterRequest.getUserAccount();
         String userPassword = userRegisterRequest.getUserPassword();
@@ -92,7 +93,7 @@ public class UserController {
         Object userObj = request.getSession().getAttribute(USER_LOGIN_STATE);
         User currentUser =(User) userObj;
         if (currentUser == null){
-            return null;
+            throw new BusinessException(ErrorCode.NOT_LOGIN);
         }
         long userId=currentUser.getId();
         // TODO 校验用户是否合法
@@ -111,7 +112,7 @@ public class UserController {
     @GetMapping("/search")
     public BaseResponse<List<User>> searchUsers(String username, HttpServletRequest request){
         if (!isAdmin(request)){
-            return new ArrayList<>();
+           throw new BusinessException(ErrorCode.NO_AUTH,"用户不是管理员");
         }
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
         if (StringUtils.isNotBlank(username)){
@@ -134,10 +135,10 @@ public class UserController {
     @PostMapping("/delete")
     public BaseResponse<Boolean> deleteUser(@RequestBody long id, HttpServletRequest request){
         if (!isAdmin(request)){
-            return null;
+            throw new BusinessException(ErrorCode.NO_AUTH,"用户不是管理员");
         }
         if (id<=0){
-            return null;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"要删除的用户不存在");
         }
         boolean result = userService.removeById(id);
         return ResultUtils.success(result);
@@ -147,13 +148,18 @@ public class UserController {
      * 是否为管理员
      *
      * @param request
-     * @return
+     * @return result
+     * @author fdt
+     *
      */
-    private BaseResponse<Boolean> isAdmin(HttpServletRequest request){
-        // 仅管理员可删除
+    private boolean isAdmin(HttpServletRequest request){
+        // 判断用户是否为管理员
         Object userObj = request.getSession().getAttribute(USER_LOGIN_STATE);
         User user = (User) userObj;
         boolean result= user != null && user.getUserRole() == ADMIN_ROLE;
-        return ResultUtils.success(result);
+        if (!result){
+            throw new BusinessException(ErrorCode.NO_AUTH,"用户不是管理员");
+        }
+        return result;
     }
 }

@@ -25,4 +25,37 @@ public class ResultUtils {
     public static BaseResponse error(ErrorCode errorCode){
         return new BaseResponse<>(errorCode);
     }
+
+    /**
+     * 失败
+     * @param code
+     * @param message
+     * @param description
+     * @return
+     */
+    public static BaseResponse error(int code,String message,String description){
+        return new BaseResponse<>(code,null,message,description);
+    }
+
+    /**
+     * 失败
+     * @param errorCode
+     * @param message
+     * @param description
+     * @return
+     */
+    public static BaseResponse error(ErrorCode errorCode,String message,String description){
+        return new BaseResponse<>(errorCode.code(),null,message,description);
+    }
+
+    /**
+     * 失败
+     * @param errorCode
+     * @param description
+     * @return
+     */
+    public static BaseResponse error(ErrorCode errorCode,String description){
+        return new BaseResponse<>(errorCode.code(),null,errorCode.message(),description);
+    }
+
 }
