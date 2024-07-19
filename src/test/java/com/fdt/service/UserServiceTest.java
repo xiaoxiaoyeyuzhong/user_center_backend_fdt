@@ -108,10 +108,10 @@ class UserServiceTest {
 //         测试成功
         @Test
          void testUserSucceeded(){
-            String userAccount = "fdt123456";
+            String userAccount = "fdt192351";
             String userPassword = "12345678";
             String checkPassword = "12345678";
-            String planetCode = "54321";
+            String planetCode = "32346";
             long result = userService.userRegister(userAccount, userPassword, checkPassword,planetCode);
             System.out.println("result="+result);
             Assertions.assertTrue(result>0);
