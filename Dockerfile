@@ -1,5 +1,5 @@
-# 使用 OpenJDK 17 作为基础镜像
-FROM openjdk:17
+# 使用 OpenJDK 17-slim 作为基础镜像,包含apt-get
+FROM openjdk:17-slim
 
 # 设置环境变量
 ENV MAVEN_VERSION=3.6.3
