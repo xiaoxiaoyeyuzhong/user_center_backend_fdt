@@ -2,7 +2,7 @@ spring:
   datasource:
     username: fdt
     password: fdt
-    url: jdbc:mysql://8.138.44.135/:3306/user_center?
+    url: jdbc:mysql://8.138.44.135:3306/universe?
     driver-class-name: com.mysql.jdbc.Driver
 #    session失效时间
   session:
