@@ -1,11 +1,15 @@
 package com.fdt.service;
 
 import com.fdt.model.domain.User;
+import org.junit.Assert;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import javax.annotation.Resource;
+import java.lang.reflect.Array;
+import java.util.Arrays;
+import java.util.List;
 
 /*
 用户服务测试
@@ -117,5 +121,15 @@ class UserServiceTest {
             Assertions.assertTrue(result>0);
         }
 
+        @Test
+        void testSearchUsersByTags(){
+            List<String> tagNameList= Arrays.asList("java","python");
+            List<User> userList=userService.searchUsersByTags(tagNameList);
+//          这个仅仅会判断userList是否为null，但是不关心size，即使size=0也成功
+//            Assertions.assertNotNull(userList);
+//          换成assertTrue，判断是否不为null且size不为0
+            Assertions.assertTrue(userList != null && !userList.isEmpty(), "userList should not be null and should not be empty");
+
+        }
 
     }

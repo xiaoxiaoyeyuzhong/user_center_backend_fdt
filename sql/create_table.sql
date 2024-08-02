@@ -1,4 +1,5 @@
 -- auto-generated definition
+# 新建用户表
 create table user
 (
     id           bigint auto_increment comment 'id'
@@ -19,3 +20,20 @@ create table user
 )
     comment '用户';
 
+# 修改用户表
+alter table user add COLUMN tags varchar(1024) null comment '标签列表'
+
+#新建标签表
+create table tag
+(
+    id         bigint auto_increment comment 'id'
+        primary key,
+    tagName    varchar(256)                       null comment '标签名称',
+    userId     bigint                             null comment '上传标签的用户id',
+    parentId   bigint                             null comment '父标签id',
+    isParent   tinyint                            null comment '是否为父标签 0-否 1-是',
+    createTime datetime default CURRENT_TIMESTAMP null comment '创建时间',
+    updateTime datetime default CURRENT_TIMESTAMP null comment '更新时间',
+    isDelete   tinyint  default 0                 not null comment '是否删除 0-不删除 1-删除'
+)
+    comment '标签';

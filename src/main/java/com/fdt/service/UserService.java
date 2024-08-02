@@ -4,6 +4,7 @@ import com.fdt.model.domain.User;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 /**
 * @author 冯德田
@@ -37,6 +38,13 @@ public interface UserService extends IService<User> {
      * @return 脱敏后的用户信息
      */
     User getSafetyUser(User orginUser);
+
+    /**
+     * 根据标签搜索用户
+     * @param tagNameList 标签列表
+     * @return List<User> 用户列表
+     */
+    List<User> searchUsersByTags(List<String> tagNameList);
 
     /**
      * 用户注销
