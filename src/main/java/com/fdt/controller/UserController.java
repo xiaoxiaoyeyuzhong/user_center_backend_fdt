@@ -11,6 +11,7 @@ import com.fdt.model.domain.request.UserRegisterRequest;
 import com.fdt.service.UserService;
 import com.fdt.model.domain.User;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -30,6 +31,7 @@ import static com.fdt.contant.UserContant.USER_LOGIN_STATE;
 
 @RestController
 @RequestMapping("/user")
+@CrossOrigin(origins = "http://localhost:5173")
 public class UserController {
 
     @Resource
@@ -88,7 +90,7 @@ public class UserController {
     }
 
 
-    @GetMapping("current")
+    @GetMapping("/current")
     public BaseResponse<User> getCurrentUser(HttpServletRequest request){
         Object userObj = request.getSession().getAttribute(USER_LOGIN_STATE);
         User currentUser =(User) userObj;
@@ -124,6 +126,22 @@ public class UserController {
             return userService.getSafetyUser(user);
         }).collect(Collectors.toList());
         return ResultUtils.success(list);
+    }
+
+    /**
+     * 根据标签搜索用户
+     * @param tagNameList
+     * @return List<User
+     */
+    @GetMapping("/search/tags")
+//  @RequestParam的required默认为true，但是我们要用自己的异常信息，所以设置为false
+    public BaseResponse<List<User>> searchUsersByTags(@RequestParam(required = false) List<String> tagNameList){
+//      先对传入的参数进行一次判空操作
+        if (CollectionUtils.isEmpty(tagNameList)){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        List<User> userList = userService.searchUsersByTags(tagNameList);
+        return ResultUtils.success(userList);
     }
 
     /**

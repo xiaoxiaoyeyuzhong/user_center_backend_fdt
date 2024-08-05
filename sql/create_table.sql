@@ -21,7 +21,11 @@ create table user
     comment '用户';
 
 # 修改用户表
-alter table user add COLUMN tags varchar(1024) null comment '标签列表'
+alter table user
+    add COLUMN tags varchar(1024) null comment '标签列表';
+
+alter table user
+    add profile varchar(512) null comment '个人简介';
 
 #新建标签表
 create table tag

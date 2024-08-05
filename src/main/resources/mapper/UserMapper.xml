@@ -15,6 +15,7 @@
             <result property="email" column="email" jdbcType="VARCHAR"/>
             <result property="status" column="status" jdbcType="INTEGER"/>
             <result property="tags" column="tags" jdbcType="VARCHAR"/>
+            <result property="profile" column="profile" jdbcType="VARCHAR"/>
             <result property="userRole" column="userRole" jdbcType="INTEGER"/>
             <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
             <result property="updateTime" column="updateTime" jdbcType="TIMESTAMP"/>
@@ -26,7 +27,7 @@
     <sql id="Base_Column_List">
         id,username,userAccount,
         avatarUrl,gender,userPassword,
-        phone,email,status,tags,userRole,
+        phone,email,status,tags,profile,userRole,
         createTime,updateTime,isDelete,
         userRole,planetCode
     </sql>
