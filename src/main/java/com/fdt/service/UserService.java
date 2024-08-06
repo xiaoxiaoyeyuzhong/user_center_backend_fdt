@@ -52,4 +52,22 @@ public interface UserService extends IService<User> {
      * @return void
      */
     public int userLogout(HttpServletRequest request);
+
+    /**
+     * 更新用户信息
+     * @param user 用户信息
+     * @return int
+     */
+    int updateUser(User user,User loginUser);
+
+    /**
+     * 获取当前登录用户
+     * @param request 请求信息
+     * @return User 当前登录用户信息
+     */
+    User getLoginUser(HttpServletRequest request);
+
+    boolean isAdmin(HttpServletRequest request);
+
+    boolean isAdmin(User loginUser);
 }

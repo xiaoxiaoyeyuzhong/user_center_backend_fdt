@@ -31,7 +31,7 @@ import static com.fdt.contant.UserContant.USER_LOGIN_STATE;
 
 @RestController
 @RequestMapping("/user")
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = "http://localhost:5173",allowCredentials = "true")
 public class UserController {
 
     @Resource
@@ -113,7 +113,7 @@ public class UserController {
      */
     @GetMapping("/search")
     public BaseResponse<List<User>> searchUsers(String username, HttpServletRequest request){
-        if (!isAdmin(request)){
+        if (!userService.isAdmin(request)){
            throw new BusinessException(ErrorCode.NO_AUTH,"用户不是管理员");
         }
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
@@ -145,6 +145,25 @@ public class UserController {
     }
 
     /**
+     * 更新用户
+     * @param user 用户信息
+     * @return Integer
+     */
+    @PostMapping("/update")
+    public BaseResponse<Integer> updateUser(@RequestBody User user,HttpServletRequest request){
+        //1.校验参数是否为空
+        if(user == null){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        //2.校验用户是否登录
+        User loginUser=userService.getLoginUser(request);
+        //3.检验权限
+        //4.触发更新
+        int result= userService.updateUser(user,loginUser);
+        return ResultUtils.success(result);
+    }
+
+    /**
      * 用户删除
      * @param id
      * @param request
@@ -152,7 +171,7 @@ public class UserController {
      */
     @PostMapping("/delete")
     public BaseResponse<Boolean> deleteUser(@RequestBody long id, HttpServletRequest request){
-        if (!isAdmin(request)){
+        if (!userService.isAdmin(request)){
             throw new BusinessException(ErrorCode.NO_AUTH,"用户不是管理员");
         }
         if (id<=0){
@@ -162,22 +181,5 @@ public class UserController {
         return ResultUtils.success(result);
     }
 
-    /**
-     * 是否为管理员
-     *
-     * @param request
-     * @return result
-     * @author fdt
-     *
-     */
-    private boolean isAdmin(HttpServletRequest request){
-        // 判断用户是否为管理员
-        Object userObj = request.getSession().getAttribute(USER_LOGIN_STATE);
-        User user = (User) userObj;
-        boolean result= user != null && user.getUserRole() == ADMIN_ROLE;
-        if (!result){
-            throw new BusinessException(ErrorCode.NO_AUTH,"用户不是管理员");
-        }
-        return result;
-    }
+
 }

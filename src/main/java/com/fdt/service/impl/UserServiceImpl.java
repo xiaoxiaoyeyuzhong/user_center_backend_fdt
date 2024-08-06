@@ -24,6 +24,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static com.fdt.contant.UserContant.ADMIN_ROLE;
 import static com.fdt.contant.UserContant.USER_LOGIN_STATE;
 
 /**
@@ -314,6 +315,83 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 //        移除登录态
         request.getSession().removeAttribute(USER_LOGIN_STATE);
         return 1;
+    }
+
+    /**
+     * 更新用户信息
+     */
+    @Override
+    public int updateUser(User user,User loginUser) {
+        //仅管理员和自己可以修改用户信息
+        long userId = user.getId();
+        if(userId<=0){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        //如果是管理员，允许更新任意用户
+        //如果不是管理员，只允许更新自己的信息
+        if(!isAdmin(loginUser) && userId != loginUser.getId()){
+            throw new BusinessException(ErrorCode.NO_AUTH);
+        }
+        User oldUser = userMapper.selectById(userId);
+        //判断要更新的用户是否存在，不存在返回请求的数据为空
+        if(oldUser == null){
+            throw new BusinessException(ErrorCode.NULL_ERROR);
+        }
+        //调用根据id进行更新的方法
+        return userMapper.updateById(user);
+    }
+
+    /**
+     * 获取当前登录用户
+     * @param request 请求信息
+     * @return User 当前登录用户
+     */
+    @Override
+    public User getLoginUser(HttpServletRequest request) {
+        //如果请求信息为空，直接返回null
+        if(request==null){
+            return null;
+        }
+        Object userObj=request.getSession().getAttribute(USER_LOGIN_STATE);
+        if(userObj==null){
+            throw new BusinessException(ErrorCode.NOT_LOGIN);
+        }
+        return (User) userObj;
+    }
+
+    /**
+     * 是否为管理员
+     *
+     * @param request 请求信息
+     * @return boolean
+     * @author fdt
+     *
+     */
+    @Override
+    public boolean isAdmin(HttpServletRequest request){
+        // 判断用户是否为管理员
+        Object userObj = request.getSession().getAttribute(USER_LOGIN_STATE);
+        User user = (User) userObj;
+        boolean result= user != null && user.getUserRole() == ADMIN_ROLE;
+        if (!result){
+            throw new BusinessException(ErrorCode.NO_AUTH,"用户不是管理员");
+        }
+        return result;
+    }
+
+    /**
+     * 是否为管理员
+     * @param loginUser 登录用户
+     * @return boolean
+     */
+    @Override
+    public boolean isAdmin(User loginUser){
+        // 判断用户是否为管理员
+        boolean result= loginUser != null && loginUser.getUserRole() == ADMIN_ROLE;
+        if (!result){
+            throw new BusinessException(ErrorCode.NO_AUTH,"用户不是管理员");
+        }
+        return result;
     }
 }
 
