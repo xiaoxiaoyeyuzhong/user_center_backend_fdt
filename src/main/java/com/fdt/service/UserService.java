@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
 * @author 冯德田
@@ -70,4 +71,8 @@ public interface UserService extends IService<User> {
     boolean isAdmin(HttpServletRequest request);
 
     boolean isAdmin(User loginUser);
+
+    void setRedisCache(String key, Object value, long time, TimeUnit unit);
+
+    Object getRedisCache(String key);
 }

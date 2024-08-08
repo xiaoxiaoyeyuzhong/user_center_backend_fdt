@@ -11,6 +11,9 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.ss.formula.functions.T;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.DigestUtils;
@@ -18,10 +21,8 @@ import org.springframework.util.DigestUtils;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static com.fdt.contant.UserContant.ADMIN_ROLE;
@@ -40,6 +41,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     @Resource
     private UserMapper userMapper;
 
+    //读写redis需要的变量
+    @Resource
+    private RedisTemplate<String,Object> redisTemplate;
+
+
+    private ValueOperations<String,Object> valueOperations;
     /**
      * 盐值，混淆密码
      */
@@ -256,51 +263,26 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         if (CollectionUtils.isEmpty(tagNameList)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-////      查询开始时间
-////      long startTime = System.currentTimeMillis();
-////      使用SQL查询
-//        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
-////      1.拼接 and 查询，形式 like '%java%' and like '%python%'
-//        for (String tagName : tagNameList){
-////      1.2 使用like匹配tags列是否包含tagName
-//            queryWrapper = queryWrapper.like("tags",tagName);
-//        }
-////      1.3 调用自带的selectList方法，将定义好的查询条件传入
-//        List<User> userList = userMapper.selectList(queryWrapper);
-//        /*
-//        1.4 stream流式处理
-//           map方法将每个User对象转换为safetyUser对象
-//           collect方法将处理后的结果收集到一个新的List中
-//        *  */
-//        List<User> tempuserList=userList.stream().map(this::getSafetyUser).collect(Collectors.toList());
-////        查询结束时间
-////        log.info("内存查询用户耗时："+(System.currentTimeMillis() - startTime)+"ms");
-//        return tempuserList;
-
-
-        //    2使用内存查询
-//        2.1 先查询所有用户
-//        查询开始时间
-//        long startTime = System.currentTimeMillis();
+//      查询开始时间
+//      long startTime = System.currentTimeMillis();
+//      使用SQL查询
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+//      1.拼接 and 查询，形式 like '%java%' and like '%python%'
+        for (String tagName : tagNameList){
+//      1.2 使用like匹配tags列是否包含tagName
+            queryWrapper = queryWrapper.like("tags",tagName);
+        }
+//      1.3 调用自带的selectList方法，将定义好的查询条件传入
         List<User> userList = userMapper.selectList(queryWrapper);
-        Gson gson = new Gson();
-//        2.2 在内存中判断判断是否包含传入的标签
-        return userList.stream().filter(user -> {
-            String tagsStr = user.getTags();
-//            如果tagsStr为空，用户不存在标签，就无法通过标签查询用户，返回false
-            if (StringUtils.isBlank(tagsStr)) {
-                return false;
-            }
-            Set<String> tempTagNameSet = gson.fromJson(tagsStr, new TypeToken<Set<String>>() {
-            }.getType());
-            for (String tageName : tagNameList) {
-                if (!tempTagNameSet.contains(tageName)) {
-                    return false;
-                }
-            }
-            return true;
-        }).map(this::getSafetyUser).collect(Collectors.toList());
+        /*
+        1.4 stream流式处理
+           map方法将每个User对象转换为safetyUser对象
+           collect方法将处理后的结果收集到一个新的List中
+        *  */
+        List<User> tempuserList=userList.stream().map(this::getSafetyUser).collect(Collectors.toList());
+//        查询结束时间
+//        log.info("内存查询用户耗时："+(System.currentTimeMillis() - startTime)+"ms");
+        return tempuserList;
 //        查询结束时间
 //        log.info("内存查询用户耗时："+(System.currentTimeMillis() - startTime)+"ms");
     }
@@ -392,6 +374,38 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             throw new BusinessException(ErrorCode.NO_AUTH,"用户不是管理员");
         }
         return result;
+    }
+
+    /**
+     * 数据缓存，将键值对存入Redis中
+     * @param key 键
+     * @param value 值
+     * @param time 过期时间
+     * @param unit 时间单位
+     */
+    @Override
+    public void setRedisCache(String key, Object value, long time, TimeUnit unit) {
+        if(valueOperations==null){
+            valueOperations= redisTemplate.opsForValue();
+        }
+        try {
+            valueOperations.set(key,value,time,unit);
+        }catch (Exception e){
+            log.error("redis set key error",e);
+        }
+    }
+
+    @Override
+    public Object getRedisCache(String key){
+        if(valueOperations==null){
+            valueOperations= redisTemplate.opsForValue();
+        }
+        try {
+            return valueOperations.get(key);
+        }catch (Exception e){
+            log.error("redis get key error",e);
+        }
+        return null;
     }
 }
 

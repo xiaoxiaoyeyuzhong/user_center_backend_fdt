@@ -2,6 +2,7 @@ package com.fdt.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fdt.common.BaseResponse;
 import com.fdt.common.ErrorCode;
 import com.fdt.common.ResultUtils;
@@ -18,6 +19,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static com.fdt.contant.UserContant.ADMIN_ROLE;
@@ -141,6 +143,39 @@ public class UserController {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         List<User> userList = userService.searchUsersByTags(tagNameList);
+        return ResultUtils.success(userList);
+    }
+
+    /**
+     * 分页搜索用户
+     * @return List<User>
+     */
+    @GetMapping("/recommend")
+//  @RequestParam的required默认为true，但是我们要用自己的异常信息，所以设置为false
+    public BaseResponse<Page<User>> recommendUsers(
+            @RequestParam(required = false, defaultValue = "1") long pageNum,
+            @RequestParam(required = false, defaultValue = "8") long pageSize,
+            HttpServletRequest request){
+        User loginUser=userService.getLoginUser(request);
+        if (loginUser == null){
+            throw new BusinessException(ErrorCode.NOT_LOGIN);
+        }
+        String redisKey=String.format("yupaofdt:user:recommend:%s",loginUser.getId());
+        Page<User> userPage= (Page<User>) userService.getRedisCache(redisKey);
+        if (userPage != null){
+            //如果缓存中存在对应层级和对应id的数据，直接返回
+            return ResultUtils.success(userPage);
+        }
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        //分页查询，current指示当前页码，size指示每页显示的记录数
+        Page<User> userList = userService.page(new Page<>(pageNum,pageSize),queryWrapper);
+        List<User> list= userList.getRecords().stream().map(user ->{
+            user.setUserPassword(null);
+            return userService.getSafetyUser(user);
+        }).collect(Collectors.toList());
+        //先用stream流，对list进行遍历，对每个user进行脱敏操作，然后将结果设置回分页结果中
+        userList.setRecords(list);
+        userService.setRedisCache(redisKey,userList,1000*60*10, TimeUnit.MILLISECONDS);
         return ResultUtils.success(userList);
     }
 
