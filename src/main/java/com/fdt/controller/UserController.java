@@ -17,12 +17,10 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import static com.fdt.contant.UserContant.ADMIN_ROLE;
 import static com.fdt.contant.UserContant.USER_LOGIN_STATE;
 
 /**
@@ -158,6 +156,7 @@ public class UserController {
             HttpServletRequest request){
         User loginUser=userService.getLoginUser(request);
         if (loginUser == null){
+            // todo 用户未登录也可以进入首页，看到默认推荐
             throw new BusinessException(ErrorCode.NOT_LOGIN);
         }
         String redisKey=String.format("yupaofdt:user:recommend:%s",loginUser.getId());
@@ -175,6 +174,7 @@ public class UserController {
         }).collect(Collectors.toList());
         //先用stream流，对list进行遍历，对每个user进行脱敏操作，然后将结果设置回分页结果中
         userList.setRecords(list);
+        //缓存时间固定可能导致缓存雪崩 todo 修改缓存过期时间
         userService.setRedisCache(redisKey,userList,1000*60*10, TimeUnit.MILLISECONDS);
         return ResultUtils.success(userList);
     }
